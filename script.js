@@ -5,6 +5,7 @@ let rows, cols, cellSize; // Declare rows, cols, and cellSize globally
 
 let grid = createGrid();
 let ageGrid = createAgeGrid(); // Ensure ageGrid is initialized separately
+let fish = [];
 
 function createGrid() {
     const grid = [];
@@ -49,6 +50,34 @@ function drawGrid() {
             ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
         }
     }
+    drawFish();
+}
+
+function drawFish() {
+    for (const swimmer of fish) {
+        ctx.save();
+        ctx.translate(swimmer.x, swimmer.y);
+        ctx.scale(swimmer.direction, 1);
+        ctx.fillStyle = swimmer.color;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, swimmer.size, swimmer.size * 0.62, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-swimmer.size * 0.72, 0);
+        ctx.lineTo(-swimmer.size * 1.5, -swimmer.size * 0.62);
+        ctx.lineTo(-swimmer.size * 1.5, swimmer.size * 0.62);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(swimmer.size * 0.52, -swimmer.size * 0.12, swimmer.size * 0.13, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#172b35';
+        ctx.beginPath();
+        ctx.arc(swimmer.size * 0.55, -swimmer.size * 0.12, swimmer.size * 0.06, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
 }
 
 function getNextGeneration(grid) {
@@ -83,6 +112,11 @@ function countNeighbors(grid, row, col) {
 
 function update() {
     grid = getNextGeneration(grid);
+    for (const swimmer of fish) {
+        swimmer.x += swimmer.speed * swimmer.direction;
+        if (swimmer.x > canvas.width + swimmer.size * 2) swimmer.x = -swimmer.size * 2;
+        if (swimmer.x < -swimmer.size * 2) swimmer.x = canvas.width + swimmer.size * 2;
+    }
     drawGrid();
     setTimeout(update, 500); // Update every 0.5 seconds
 }
@@ -95,6 +129,14 @@ function resizeCanvas() {
     cols = Math.floor(canvas.width / cellSize);
     grid = createGrid(); // Reinitialize grid with random live cells
     ageGrid = createAgeGrid();
+    fish = Array.from({ length: 8 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 9 + Math.random() * 10,
+        speed: 2 + Math.random() * 3,
+        direction: Math.random() < 0.5 ? -1 : 1,
+        color: ['#ff7043', '#00a896', '#f4a261', '#4786c7'][Math.floor(Math.random() * 4)]
+    }));
     drawGrid();
 }
 
